@@ -92,3 +92,7 @@ Memory Usage (MB):
   P50: 175.95
   P95: 176.40
   P99: 176.40
+
+**CPU Usage**: BGR format has higher CPU usage (54.83%) compared to YUV with delayed conversion (35.99%) because FFmpeg needs to perform an additional color space conversion. Video streams are typically decoded in YUV format, which is the native format for streaming. FFmpeg must convert from YUV to BGR before writing the buffer to stdout, adding computational overhead.
+
+**Memory Usage**: BGR format uses more memory (175.48 MB) compared to YUV (~131 MB) because BGR24 frames require 3 bytes per pixel, while YUV420p frames require only 1.5 bytes per pixel. This results in BGR frames being approximately 2x larger than YUV frames in terms of buffer size.
