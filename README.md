@@ -5,6 +5,10 @@ This repository compares different approaches to decoding camera streams and bat
 ## Preparing Videos
 
 To simulate camera **RTSP** streams, I use MEDIAMTX and FFmpeg to publish looped videos as streams. The videos used in this project were sourced from this [GitHub gist](https://gist.github.com/jsturgis/3b19447b304616f18657):
+
+<details>
+<summary>Click to expand video metadata</summary>
+
 ```json
 {
   "videos": [
@@ -43,6 +47,9 @@ To simulate camera **RTSP** streams, I use MEDIAMTX and FFmpeg to publish looped
   ]
 }
 ```
+
+</details>
+
 ## Benchmark Results
 
 ### FFmpeg output with YUV, convert to BGR_I420 after 10 seconds
