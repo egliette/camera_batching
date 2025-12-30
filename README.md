@@ -43,3 +43,52 @@ To simulate camera **RTSP** streams, I use MEDIAMTX and FFmpeg to publish looped
   ]
 }
 ```
+## Benchmark Results
+
+### FFmpeg output with YUV, convert to BGR_I420 after 10 seconds
+
+This use case applies when you don't need every BGR frame for model inference, but only need to convert frames periodically after a given interval.
+
+CPU Usage (%):
+  Mean: 35.99
+  P50: 32.80
+  P95: 53.81
+  P99: 53.90
+
+Memory Usage (MB):
+  Mean: 133.10
+  P50: 133.15
+  P95: 133.40
+
+### FFmpeg output with YUV, convert to BGR_I420 using OpenCV
+
+This use case applies when you need YUV format for memory efficiency, but must convert to BGR immediately to feed frames to a model.
+
+CPU Usage (%):
+  Mean: 101.36
+  P50: 97.94
+  P95: 145.35
+  P99: 147.97
+
+Memory Usage (MB):
+  Mean: 130.98
+  P50: 131.00
+  P95: 131.51
+  P99: 131.58
+
+
+### FFmpeg output with BGR format
+
+The FFmpeg pipeline outputs buffers with `pix_fmt bgr24`, which is directly compatible with OpenCV and requires no color space conversion.
+
+CPU Usage (%):
+  Mean: 54.83
+  P50: 57.23
+  P95: 69.87
+  P99: 71.64
+
+Memory Usage (MB):
+  Mean: 175.48
+  P50: 175.95
+  P95: 176.40
+  P99: 176.40
