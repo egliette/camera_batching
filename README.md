@@ -49,6 +49,7 @@ To simulate camera **RTSP** streams, I use MEDIAMTX and FFmpeg to publish looped
 
 This use case applies when you don't need every BGR frame for model inference, but only need to convert frames periodically after a given interval.
 
+```bash
 CPU Usage (%):
   Mean: 35.99
   P50: 32.80
@@ -59,11 +60,13 @@ Memory Usage (MB):
   Mean: 133.10
   P50: 133.15
   P95: 133.40
+```
 
 ### FFmpeg output with YUV, convert to BGR_I420 using OpenCV
 
 This use case applies when you need YUV format for memory efficiency, but must convert to BGR immediately to feed frames to a model.
 
+```bash
 CPU Usage (%):
   Mean: 101.36
   P50: 97.94
@@ -75,12 +78,14 @@ Memory Usage (MB):
   P50: 131.00
   P95: 131.51
   P99: 131.58
+```
 
 
 ### FFmpeg output with BGR format
 
 The FFmpeg pipeline outputs buffers with `pix_fmt bgr24`, which is directly compatible with OpenCV and requires no color space conversion.
 
+```bash
 CPU Usage (%):
   Mean: 54.83
   P50: 57.23
@@ -92,6 +97,7 @@ Memory Usage (MB):
   P50: 175.95
   P95: 176.40
   P99: 176.40
+```
 
 **CPU Usage**: BGR format has higher CPU usage (54.83%) compared to YUV with delayed conversion (35.99%) because FFmpeg needs to perform an additional color space conversion. Video streams are typically decoded in YUV format, which is the native format for streaming. FFmpeg must convert from YUV to BGR before writing the buffer to stdout, adding computational overhead.
 
