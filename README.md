@@ -166,7 +166,11 @@ GPU Memory Usage (MB):
 
 ### FFmpeg output with BGR format (buffer in CPU memory)
 
-The FFmpeg pipeline outputs buffers with `pix_fmt bgr24`, which is directly compatible with OpenCV and requires no color space conversion.
+The FFmpeg pipeline outputs buffers with `pix_fmt bgr24`, which is directly compatible with OpenCV and requires no color space conversion. There are two approaches to handle GPU-accelerated decoding:
+
+#### Approach 1: Direct decoder output (simpler pipeline)
+
+Uses `-c:v h264_cuvid` decoder with direct BGR24 output. The decoder handles GPU-to-CPU transfer internally, but the conversion pipeline is: **NV12 (GPU) → YUV420p → BGR24** (two conversion steps).
 
 ```bash
 CPU Usage (%):
@@ -187,3 +191,31 @@ GPU Memory Usage (MB):
   P95: 99.00
   P99: 99.00
 ```
+
+**Trade-offs**: Simpler command but higher CPU usage due to the extra YUV420p intermediate conversion step. Lower GPU memory usage.
+
+#### Approach 2: Explicit GPU memory management (optimized pipeline)
+
+Uses `-hwaccel cuda` with `-hwaccel_output_format cuda` to keep frames in GPU memory, then `-vf "hwdownload,format=nv12"` to download and convert to CPU memory. The conversion pipeline is: **NV12 (GPU) → NV12 (CPU) → BGR24** (one direct conversion step, avoiding YUV420p intermediate).
+
+```bash
+CPU Usage (%):
+  Mean: 45.57
+  P50: 45.28
+  P95: 61.04
+  P99: 64.32
+
+Memory Usage (MB):
+  Mean: 232.15
+  P50: 232.10
+  P95: 232.46
+  P99: 232.49
+
+GPU Memory Usage (MB):
+  Mean: 133.00
+  P50: 133.00
+  P95: 133.00
+  P99: 133.00
+```
+
+**Trade-offs**: Lower CPU usage (~25% reduction) due to eliminating the intermediate YUV420p conversion step, and slightly lower system memory usage. However, higher GPU memory usage (133MB vs 99MB) due to explicit GPU memory buffering. More complex pipeline configuration.

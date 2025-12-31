@@ -55,15 +55,21 @@ def ffmpeg_process(cmd):
 
 def read_frames_bgr24(rtsp_url, metadata):
     # -rtsp_transport tcp: use TCP transport for RTSP (more reliable than UDP)
+    # -hwaccel cuda: enable CUDA hardware acceleration
+    # -hwaccel_output_format cuda: keep decoded frames in GPU memory (CUDA format)
     # -c:v h264_cuvid: GPU-accelerated H.264 decoder using NVIDIA CUVID
     # -i: input source URL
+    # -vf "hwdownload,format=nv12": download frames from GPU to CPU and convert to NV12 format
     # -pix_fmt bgr24: output pixel format as BGR24 (3 bytes per pixel, compatible with OpenCV)
     # -f rawvideo: output raw uncompressed video frames
     # -: output to stdout
     cmd_str = f"""
         ffmpeg -rtsp_transport tcp \
+        -hwaccel cuda \
+        -hwaccel_output_format cuda \
         -c:v h264_cuvid \
         -i {rtsp_url} \
+        -vf "hwdownload,format=nv12" \
         -pix_fmt bgr24 \
         -f rawvideo \
         -
