@@ -50,7 +50,7 @@ To simulate camera **RTSP** streams, I use MEDIAMTX and FFmpeg to publish looped
 
 </details>
 
-## Benchmark Results
+## CPU only - Benchmark Results
 
 ### FFmpeg output with YUV, convert to BGR_I420 after 10 seconds
 
@@ -109,3 +109,81 @@ Memory Usage (MB):
 **CPU Usage**: BGR format has higher CPU usage (54.83%) compared to YUV with delayed conversion (35.99%) because FFmpeg needs to perform an additional color space conversion. Video streams are typically decoded in YUV format, which is the native format for streaming. FFmpeg must convert from YUV to BGR before writing the buffer to stdout, adding computational overhead.
 
 **Memory Usage**: BGR format uses more memory (175.48 MB) compared to YUV (~131 MB) because BGR24 frames require 3 bytes per pixel, while YUV420p frames require only 1.5 bytes per pixel. This results in BGR frames being approximately 2x larger than YUV frames in terms of buffer size.
+
+## Hardware Accelerator - Benchmark Results
+
+Use `ffmpeg -hwaccels` to check supported hardware acceleration methods.
+
+**Note**: Despite using GPU-accelerated decoding (`h264_cuvid`), the results show similar or worse CPU and memory usage compared to CPU-only decoding. This occurs because the decoded frames are transferred back to CPU memory space, adding overhead from CPU-GPU memory transfers. Additionally, GPU memory management and driver overhead contribute to the increased resource usage. The benefits of hardware acceleration are more apparent when processing remains on the GPU or when handling multiple high-resolution streams simultaneously.
+
+### FFmpeg output with YUV, convert to BGR_I420 after 10 seconds (buffer in CPU memory)
+
+This use case applies when you don't need every BGR frame for model inference, but only need to convert frames periodically after a given interval.
+
+```bash
+CPU Usage (%):
+  Mean: 26.11
+  P50: 25.20
+  P95: 34.80
+  P99: 35.50
+
+Memory Usage (MB):
+  Mean: 166.51
+  P50: 166.50
+  P95: 166.86
+  P99: 166.97
+
+GPU Memory Usage (MB):
+  Mean: 99.00
+  P50: 99.00
+  P95: 99.00
+  P99: 99.00
+```
+
+### FFmpeg output with YUV, convert to BGR_I420 using OpenCV (buffer in CPU memory)
+
+This use case applies when you need YUV format for memory efficiency, but must convert to BGR immediately to feed frames to a model.
+
+```bash
+CPU Usage (%):
+  Mean: 70.50
+  P50: 77.81
+  P95: 91.37
+  P99: 92.03
+
+Memory Usage (MB):
+  Mean: 165.22
+  P50: 165.50
+  P95: 166.01
+  P99: 166.08
+
+GPU Memory Usage (MB):
+  Mean: 99.00
+  P50: 99.00
+  P95: 99.00
+  P99: 99.00
+```
+
+### FFmpeg output with BGR format (buffer in CPU memory)
+
+The FFmpeg pipeline outputs buffers with `pix_fmt bgr24`, which is directly compatible with OpenCV and requires no color space conversion.
+
+```bash
+CPU Usage (%):
+  Mean: 60.67
+  P50: 66.00
+  P95: 74.13
+  P99: 75.34
+
+Memory Usage (MB):
+  Mean: 245.35
+  P50: 245.25
+  P95: 245.78
+  P99: 245.96
+
+GPU Memory Usage (MB):
+  Mean: 99.00
+  P50: 99.00
+  P95: 99.00
+  P99: 99.00
+```

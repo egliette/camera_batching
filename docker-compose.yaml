@@ -33,6 +33,17 @@ services:
     pull_policy: never
     volumes:
       - ./ffmpeg_solution:/app
+      - ./videos:/videos
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     depends_on:
       - media_service
     tty: true
